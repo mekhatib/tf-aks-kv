@@ -40,7 +40,7 @@ resource "azurerm_user_assigned_identity" "mi" {
 
 provider "helm" {
   kubernetes {
-    load_config_file       = false
+    #load_config_file       = false
     host                   = azurerm_kubernetes_cluster.aks.kube_config.0.host
     username               = azurerm_kubernetes_cluster.aks.kube_config.0.username
     password               = azurerm_kubernetes_cluster.aks.kube_config.0.password
@@ -95,14 +95,14 @@ resource "azurerm_role_assignment" "mi_operator" {
   principal_id         = azurerm_kubernetes_cluster.aks.kubelet_identity.0.object_id
 }
 
-resource "helm_release" "kv_csi" {
-  name             = "csi-secrets-provider-azure"
-  repository       = "https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts"
-  chart            = "csi-secrets-store-provider-azure"
-  version          = "0.0.7"
-  namespace        = var.kv_csi_ns
-  create_namespace = true
-}
+#resource "helm_release" "kv_csi" {
+#  name             = "csi-secrets-provider-azure"
+#  repository       = "https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts"
+#  chart            = "csi-secrets-store-provider-azure"
+#  version          = "0.0.7"
+#  namespace        = var.kv_csi_ns
+#  create_namespace = true
+#}
 
 data "azurerm_client_config" "current" {}
 
