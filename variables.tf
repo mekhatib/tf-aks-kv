@@ -1,5 +1,5 @@
 variable rg_location {
-  default = "westeurope"
+  default = "northeurope"
 }
 
 variable aks_version {
