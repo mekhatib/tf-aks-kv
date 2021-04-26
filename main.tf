@@ -9,11 +9,11 @@ resource "random_string" "unique" {
   upper   = false
 }
 
-resource "azurerm_resource_group" "rg" {
+#resource "azurerm_resource_group" "rg" {
   #name     = "rg-${random_string.unique.result}"
-  name     = var.rg_name
-  location = var.rg_location
-}
+ # name     = var.rg_name
+ # location = var.rg_location
+#}
 
 resource "azurerm_kubernetes_cluster" "aks" {
   name                = "aks-${random_string.unique.result}"
