@@ -32,11 +32,11 @@ resource "azurerm_kubernetes_cluster" "aks" {
   }
 }
 
-resource "azurerm_user_assigned_identity" "mi" {
-  name                = "mi-${random_string.unique.result}"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-}
+#resource "azurerm_user_assigned_identity" "mi" {
+#  name                = "mi-${random_string.unique.result}"
+#  location            = azurerm_resource_group.rg.location
+#  resource_group_name = azurerm_resource_group.rg.name
+#}
 
 provider "helm" {
   kubernetes {
@@ -50,26 +50,26 @@ provider "helm" {
   }
 }
 
-resource "helm_release" "aad_pod_id" {
-  name             = "aad-pod-identity"
-  repository       = "https://raw.githubusercontent.com/Azure/aad-pod-identity/master/charts"
-  chart            = "aad-pod-identity"
-  version          = "2.0.0"
-  namespace        = var.aad_pod_id_ns
-  create_namespace = true
-
-  values = [
-    <<-EOF
-    azureIdentities:
-    - name: "${azurerm_user_assigned_identity.mi.name}"
-      resourceID: "${azurerm_user_assigned_identity.mi.id}"
-      clientID: "${azurerm_user_assigned_identity.mi.client_id}"
-      binding:
-        name: "${azurerm_user_assigned_identity.mi.name}-identity-binding"
-        selector: "${var.aad_pod_id_binding_selector}"
-    EOF
-  ]
-}
+#resource "helm_release" "aad_pod_id" {
+#  name             = "aad-pod-identity"
+#  repository       = "https://raw.githubusercontent.com/Azure/aad-pod-identity/master/charts"
+#  chart            = "aad-pod-identity"
+#  version          = "2.0.0"
+#  namespace        = var.aad_pod_id_ns
+#  create_namespace = true
+#
+#  values = [
+#    <<-EOF
+#    azureIdentities:
+#    - name: "${azurerm_user_assigned_identity.mi.name}"
+#      resourceID: "${azurerm_user_assigned_identity.mi.id}"
+#      clientID: "${azurerm_user_assigned_identity.mi.client_id}"
+#      binding:
+#        name: "${azurerm_user_assigned_identity.mi.name}-identity-binding"
+#        selector: "${var.aad_pod_id_binding_selector}"
+#    EOF
+#  ]
+#}
 
 data "azurerm_resource_group" "aks_node_rg" {
   name = azurerm_kubernetes_cluster.aks.node_resource_group
@@ -77,23 +77,23 @@ data "azurerm_resource_group" "aks_node_rg" {
 
 # Following roles are required by AAD Pod Identity and must be assigned to the Kubelet Identity
 # https://github.com/Azure/aad-pod-identity/blob/master/docs/readmes/README.msi.md#pre-requisites---role-assignments
-resource "azurerm_role_assignment" "vm_contributor" {
-  scope                = data.azurerm_resource_group.aks_node_rg.id
-  role_definition_name = "Virtual Machine Contributor"
-  principal_id         = azurerm_kubernetes_cluster.aks.kubelet_identity.0.object_id
-}
+#resource "azurerm_role_assignment" "vm_contributor" {
+#  scope                = data.azurerm_resource_group.aks_node_rg.id
+#  role_definition_name = "Virtual Machine Contributor"
+#  principal_id         = azurerm_kubernetes_cluster.aks.kubelet_identity.0.object_id
+#}
 
-resource "azurerm_role_assignment" "all_mi_operator" {
-  scope                = data.azurerm_resource_group.aks_node_rg.id
-  role_definition_name = "Managed Identity Operator"
-  principal_id         = azurerm_kubernetes_cluster.aks.kubelet_identity.0.object_id
-}
+#resource "azurerm_role_assignment" "all_mi_operator" {
+#  scope                = data.azurerm_resource_group.aks_node_rg.id
+#  role_definition_name = "Managed Identity Operator"
+#  principal_id         = azurerm_kubernetes_cluster.aks.kubelet_identity.0.object_id
+#}
 
-resource "azurerm_role_assignment" "mi_operator" {
-  scope                = azurerm_user_assigned_identity.mi.id
-  role_definition_name = "Managed Identity Operator"
-  principal_id         = azurerm_kubernetes_cluster.aks.kubelet_identity.0.object_id
-}
+#resource "azurerm_role_assignment" "mi_operator" {
+#  scope                = azurerm_user_assigned_identity.mi.id
+#  role_definition_name = "Managed Identity Operator"
+#  principal_id         = azurerm_kubernetes_cluster.aks.kubelet_identity.0.object_id
+#}
 
 #resource "helm_release" "kv_csi" {
 #  name             = "csi-secrets-provider-azure"
@@ -106,49 +106,49 @@ resource "azurerm_role_assignment" "mi_operator" {
 
 data "azurerm_client_config" "current" {}
 
-resource "azurerm_key_vault" "kv" {
-  name                = "kv-${random_string.unique.result}"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  tenant_id           = data.azurerm_client_config.current.tenant_id
-  sku_name            = "standard"
+#resource "azurerm_key_vault" "kv" {
+ # name                = "kv-${random_string.unique.result}"
+ # location            = azurerm_resource_group.rg.location
+ # resource_group_name = azurerm_resource_group.rg.name
+ # tenant_id           = data.azurerm_client_config.current.tenant_id
+ # sku_name            = "standard"
 
-  network_acls {
-    default_action = "Allow"
-    bypass         = "AzureServices"
-  }
-}
+ # network_acls {
+ #   default_action = "Allow"
+ #   bypass         = "AzureServices"
+ # }
+#}
 
 # Set permissions for currently logged-in Terraform SP to be able to read/modify secrets
-resource "azurerm_key_vault_access_policy" "kv" {
-  key_vault_id = azurerm_key_vault.kv.id
-  tenant_id    = data.azurerm_client_config.current.tenant_id
-  object_id    = data.azurerm_client_config.current.object_id
-  secret_permissions = [
-    "Get",
-    "Set",
-    "Delete"
-  ]
-}
+#resource "azurerm_key_vault_access_policy" "kv" {
+#  key_vault_id = azurerm_key_vault.kv.id
+#  tenant_id    = data.azurerm_client_config.current.tenant_id
+#  object_id    = data.azurerm_client_config.current.object_id
+#  secret_permissions = [
+#    "Get",
+#    "Set",
+#    "Delete"
+#  ]
+#}
 
-resource "azurerm_role_assignment" "kv" {
-  scope                = azurerm_key_vault.kv.id
-  role_definition_name = "Reader"
-  principal_id         = azurerm_user_assigned_identity.mi.principal_id
-}
+#resource "azurerm_role_assignment" "kv" {
+#  scope                = azurerm_key_vault.kv.id
+#  role_definition_name = "Reader"
+#  principal_id         = azurerm_user_assigned_identity.mi.principal_id
+#}
 
-resource "azurerm_key_vault_access_policy" "mi" {
-  key_vault_id       = azurerm_key_vault.kv.id
-  tenant_id          = data.azurerm_client_config.current.tenant_id
-  object_id          = azurerm_user_assigned_identity.mi.principal_id
-  secret_permissions = ["Get"]
-}
+#resource "azurerm_key_vault_access_policy" "mi" {
+#  key_vault_id       = azurerm_key_vault.kv.id
+#  tenant_id          = data.azurerm_client_config.current.tenant_id
+#  object_id          = azurerm_user_assigned_identity.mi.principal_id
+#  secret_permissions = ["Get"]
+#}
 
-resource "azurerm_key_vault_secret" "demo" {
-  name         = "demo-secret"
-  value        = "demo-value"
-  key_vault_id = azurerm_key_vault.kv.id
+#resource "azurerm_key_vault_secret" "demo" {
+#  name         = "demo-secret"
+#  value        = "demo-value"
+#  key_vault_id = azurerm_key_vault.kv.id
 
   # Must wait for Terraform SP policy to kick in before creating secrets
-  depends_on = [azurerm_key_vault_access_policy.kv]
-}
+#  depends_on = [azurerm_key_vault_access_policy.kv]
+#}
