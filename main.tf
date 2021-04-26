@@ -17,7 +17,7 @@ resource "random_string" "unique" {
 
 resource "azurerm_kubernetes_cluster" "aks" {
   name                = "aks-${random_string.unique.result}"
-  location            = azurerm_resource_group.rg.location
+  location            = var.rg_location
   resource_group_name = var.rg_name
   kubernetes_version  = var.aks_version
   dns_prefix          = "aks"
