@@ -2,6 +2,10 @@ variable rg_location {
   default = "northeurope"
 }
 
+variable rg_name {
+  default = "mahil_rg"
+}
+
 variable aks_version {
   default = "1.20.5"
 }
