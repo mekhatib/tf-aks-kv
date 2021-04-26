@@ -10,7 +10,8 @@ resource "random_string" "unique" {
 }
 
 resource "azurerm_resource_group" "rg" {
-  name     = "rg-${random_string.unique.result}"
+  #name     = "rg-${random_string.unique.result}"
+  name     = var.rg_name
   location = var.rg_location
 }
 
